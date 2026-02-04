@@ -118,7 +118,7 @@ def search_germany_it_jobs():
         combined_jobs['is_berlin'] = combined_jobs['location'].str.contains('Berlin', case=False, na=False)
         combined_jobs = combined_jobs.sort_values(
             by=['is_berlin', 'date_posted'],
-            ascending=[False, False]
+              ascending=[False, False]
         ).reset_index(drop=True)
 
         # Drop the temporary is_berlin column
@@ -128,9 +128,20 @@ def search_germany_it_jobs():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = f"germany_it_jobs_{timestamp}.csv"
 
-        # Save to CSV
-        combined_jobs.to_csv(
+        # Ensure desired output columns and order for CSV
+        desired_columns = [ 'company', 'title', 'location', 'job_url','job_type', 'site', 'date_posted']
+
+        # Add missing columns as empty values so reindex works reliably
+        for col in desired_columns:
+            if col not in combined_jobs.columns:
+                combined_jobs[col] = ""
+
+        output_df = combined_jobs[desired_columns]
+
+        # Save to CSV with the requested column order
+        output_df.to_csv(
             output_file,
+            columns=desired_columns,
             quoting=csv.QUOTE_NONNUMERIC,
             escapechar="\\",
             index=False
