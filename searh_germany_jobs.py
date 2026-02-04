@@ -126,7 +126,7 @@ def search_germany_it_jobs():
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = f"germany_it_jobs_{timestamp}.csv"
+        output_file = f"jobs/germany_it_jobs_{timestamp}.csv"
 
         # Ensure desired output columns and order for CSV
         desired_columns = [ 'company', 'title', 'location', 'job_url','job_type', 'site', 'date_posted']
