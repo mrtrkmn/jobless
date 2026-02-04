@@ -1,0 +1,47 @@
+name: Weekly Job Search
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC (0 9 * * 1)
+    - cron: '0 9 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+permissions:
+  contents: write  # Required to push changes
+
+jobs:
+  search-jobs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run job search script
+      run: |
+        python searh_germany_jobs.py
+        
+    - name: Upload CSV as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: job-search-results-${{ github.run_number }}
+        path: jobs/*.csv
+        retention-days: 90
+        
+    - name: Commit and push results
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add jobs/
+        git diff --staged --quiet || git commit -m "Add job search results for $(date +%Y-%m-%d)"
+        git push
