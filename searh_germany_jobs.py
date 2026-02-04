@@ -14,6 +14,7 @@ Jobs from the last week are filtered.
 """
 
 import csv
+import os
 from datetime import datetime
 from jobspy import scrape_jobs
 
@@ -126,9 +127,12 @@ def search_germany_it_jobs():
         # Drop the temporary is_berlin column
         combined_jobs = combined_jobs.drop(columns=["is_berlin"])
 
+        # Create jobs directory if it doesn't exist
+        os.makedirs("jobs", exist_ok=True)
+
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = f"germany_it_jobs_{timestamp}.csv"
+        output_file = f"jobs/germany_it_jobs_{timestamp}.csv"
 
         # Define columns to include in CSV output (ensure title is included)
         csv_columns = [
