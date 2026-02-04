@@ -14,7 +14,6 @@ Jobs from the last week are filtered.
 """
 
 import csv
-import os
 from datetime import datetime
 from jobspy import scrape_jobs
 
@@ -68,7 +67,7 @@ def search_germany_it_jobs():
                 location="Berlin, Germany",
                 results_wanted=20,
                 hours_old=hours_old,
-                country_indeed="Germany",
+                country_indeed='Germany',
                 verbose=1,
             )
             if not jobs.empty:
@@ -93,7 +92,7 @@ def search_germany_it_jobs():
                 location="Germany",
                 results_wanted=20,
                 hours_old=hours_old,
-                country_indeed="Germany",
+                country_indeed='Germany',
                 verbose=1,
             )
             if not jobs.empty:
@@ -110,79 +109,42 @@ def search_germany_it_jobs():
     # Combine all results
     if all_jobs:
         import pandas as pd
-
         combined_jobs = pd.concat(all_jobs, ignore_index=True)
 
         # Remove duplicates based on job_url
-        combined_jobs = combined_jobs.drop_duplicates(subset=["job_url"], keep="first")
+        combined_jobs = combined_jobs.drop_duplicates(subset=['job_url'], keep='first')
 
         # Sort by location to prioritize Berlin jobs
-        combined_jobs["is_berlin"] = combined_jobs["location"].str.contains(
-            "Berlin", case=False, na=False
-        )
+        combined_jobs['is_berlin'] = combined_jobs['location'].str.contains('Berlin', case=False, na=False)
         combined_jobs = combined_jobs.sort_values(
-            by=["is_berlin", "date_posted"], ascending=[False, False]
+            by=['is_berlin', 'date_posted'],
+            ascending=[False, False]
         ).reset_index(drop=True)
 
         # Drop the temporary is_berlin column
-        combined_jobs = combined_jobs.drop(columns=["is_berlin"])
-
-        # Create jobs directory if it doesn't exist
-        os.makedirs("jobs", exist_ok=True)
+        combined_jobs = combined_jobs.drop(columns=['is_berlin'])
 
         # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = f"jobs/germany_it_jobs_{timestamp}.csv"
+        output_file = f"germany_it_jobs_{timestamp}.csv"
 
-        # Define columns to include in CSV output (ensure title is included)
-        csv_columns = [
-            "title",
-            "company",
-            "location",
-            "job_type",
-            "site",
-            "date_posted",
-            "job_url",
-            "job_url_direct",
-            "description",
-            "is_remote",
-            "salary_source",
-            "interval",
-            "min_amount",
-            "max_amount",
-            "currency",
-            "company_industry",
-            "company_url",
-            "job_level",
-            "job_function",
-        ]
-        # Filter to only columns that exist in the dataframe
-        columns_to_save = [col for col in csv_columns if col in combined_jobs.columns]
-
-        # Save to CSV with selected columns
-        combined_jobs[columns_to_save].to_csv(
-            output_file, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False
+        # Save to CSV
+        combined_jobs.to_csv(
+            output_file,
+            quoting=csv.QUOTE_NONNUMERIC,
+            escapechar="\\",
+            index=False
         )
 
         print(f"Total jobs found: {len(combined_jobs)}")
         print(f"Results saved to: {output_file}")
-        print(f"Columns saved: {', '.join(columns_to_save)}")
         print()
         print("Sample of results (first 5 jobs):")
         print("-" * 80)
 
         # Display sample results
-        display_columns = [
-            "title",
-            "company",
-            "location",
-            "job_type",
-            "site",
-            "date_posted",
-        ]
-        available_columns = [
-            col for col in display_columns if col in combined_jobs.columns
-        ]
+        display_columns = ['title', 'company', 'location', 'job_type', 'site', 'date_posted']
+        available_columns = [col for col in display_columns if col in combined_jobs.columns]
         print(combined_jobs[available_columns].head(5).to_string(index=False))
 
         print()
