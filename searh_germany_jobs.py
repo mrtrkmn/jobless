@@ -134,39 +134,47 @@ def search_germany_it_jobs():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = f"jobs/germany_it_jobs_{timestamp}.csv"
 
-        # Define columns to include in CSV output (ensure title is included)
-        csv_columns = [
-            "title",
-            "company",
-            "location",
-            "job_type",
-            "site",
-            "date_posted",
-            "job_url",
-            "job_url_direct",
-            "description",
-            "is_remote",
-            "salary_source",
-            "interval",
-            "min_amount",
-            "max_amount",
-            "currency",
-            "company_industry",
-            "company_url",
-            "job_level",
-            "job_function",
-        ]
-        # Filter to only columns that exist in the dataframe
-        columns_to_save = [col for col in csv_columns if col in combined_jobs.columns]
+        app_link_series = None
+        if "job_url" in combined_jobs.columns:
+            app_link_series = combined_jobs["job_url"]
+        if "job_url_direct" in combined_jobs.columns:
+            app_link_series = (
+                app_link_series.fillna(combined_jobs["job_url_direct"])
+                if app_link_series is not None
+                else combined_jobs["job_url_direct"]
+            )
 
-        # Save to CSV with selected columns
-        combined_jobs[columns_to_save].to_csv(
-            output_file, quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False
-        )
+        output_df = {}
+        if "title" in combined_jobs.columns:
+            output_df["Job Title"] = combined_jobs["title"]
+        if app_link_series is not None:
+            output_df["Job Application Link"] = app_link_series
+        if "company" in combined_jobs.columns:
+            output_df["Company"] = combined_jobs["company"]
+        if "site" in combined_jobs.columns:
+            output_df["Platform"] = combined_jobs["site"]
+
+        selected_columns = ["Job Title", "Job Application Link", "Company", "Platform"]
+        ordered_df = {
+            col: output_df[col] for col in selected_columns if col in output_df
+        }
+
+        if ordered_df:
+            import pandas as pd
+
+            pd.DataFrame(ordered_df).to_csv(
+                output_file,
+                quoting=csv.QUOTE_NONNUMERIC,
+                escapechar="\\",
+                index=False,
+            )
+        else:
+            print("No expected columns found; CSV not created.")
+            return None
 
         print(f"Total jobs found: {len(combined_jobs)}")
         print(f"Results saved to: {output_file}")
-        print(f"Columns saved: {', '.join(columns_to_save)}")
+        print(f"Columns saved: {', '.join(ordered_df.keys())}")
         print()
         print("Sample of results (first 5 jobs):")
         print("-" * 80)
